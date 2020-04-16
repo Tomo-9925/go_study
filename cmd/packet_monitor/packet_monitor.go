@@ -22,8 +22,6 @@ func printD(msg string) {
 	}
 }
 
-// キューの削除処理
-
 func main() {
 	printD("debug mode")
 

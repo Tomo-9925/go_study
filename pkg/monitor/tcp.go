@@ -17,7 +17,7 @@ const (
 
 var (
 	tcpFile string = ProcRoot + "/net/tcp"
-	// tcpFile string = "./tcp"
+	// tcpFile string = "./tcp" // 検証用
 )
 
 // TCPData は`/proc/net/tcp`の内容（全部やるのは辛いので一部だけ）
@@ -44,10 +44,6 @@ type TCPData struct {
 	// SendingCongestionWindow
 	// SlowStartSizeThreshold
 }
-
-// func (t *TCPData) String() string {
-// 	return fmt.Sprintf("{\n\tEntry: %3d,\n\tLocalIP: %v,\n\tLocalPort: %d,\n\tRemoteIP: %v,\n\tRemotePort: %d,\n\tinode: %d}", )
-// }
 
 // GetAllTCPData は`/proc/net/tcp`から取得した情報をTCPData構造体の入ったスライスで返却
 func GetAllTCPData() (*[]TCPData, error) {

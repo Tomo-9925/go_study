@@ -10,11 +10,6 @@ import (
 	"github.com/tomo-9925/go_study/pkg/utility"
 )
 
-// 定数
-const (
-	ProcRoot = "/proc" // `proc`ファイルシステムのパス
-)
-
 var (
 	tcpFile string = ProcRoot + "/net/tcp"
 	// tcpFile string = "./tcp" // 検証用
@@ -22,7 +17,7 @@ var (
 
 // TCPData は`/proc/net/tcp`の内容（全部やるのは辛いので一部だけ）
 type TCPData struct {
-	EntryNum   uint8
+	EntryNum   uint16
 	LocalIP    net.IP
 	LocalPort  uint16
 	RemoteIP   net.IP

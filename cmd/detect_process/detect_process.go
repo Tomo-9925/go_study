@@ -14,15 +14,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(*tcp)
+	for i, d := range tcp {
+		fmt.Println(i, d)
+	}
 	var num uint16
-	fmt.Print("どのTCPの情報を取得しますか．配列番号を指定してください．\n> ")
+	fmt.Print("どのTCPの情報を取得しますか．インデックスを指定してください．\n> ")
 	fmt.Scanf("%d", num)
 
-	processes, err := monitor.GetProcesses((*tcp)[num].Inode)
+	process, err := monitor.GetProcess(tcp[num].Inode)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Println(*processes)
+	fmt.Println(process)
 }

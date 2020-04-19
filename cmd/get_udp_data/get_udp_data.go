@@ -11,5 +11,5 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(*data)
+	fmt.Println(data)
 }

@@ -6,6 +6,7 @@ package monitor
 */
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -29,32 +30,36 @@ type UDPData struct {
 	Inode      uint32
 }
 
+func (u UDPData) String() string {
+	return fmt.Sprintf("{EntryNum: %d, Local: %v:%d, Remote: %v:%d, inode: %d}", u.EntryNum, u.LocalIP, u.LocalPort, u.RemoteIP, u.RemotePort, u.Inode)
+}
+
 // GetAllUDPData は`/proc/net/udp`から取得した情報をUDPData構造体の入ったスライスで返却
-func GetAllUDPData() (*[]UDPData, error) {
+func GetAllUDPData() ([]*UDPData, error) {
 	f, err := os.Open(udpFile)
-	var entries []UDPData
+	var entries []*UDPData
 	if err != nil {
-		return &entries, err
+		return entries, err
 	}
 	defer f.Close()
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		return &entries, err
+		return entries, err
 	}
 
 	s := strings.FieldsFunc(*(*string)(unsafe.Pointer(&b)), utility.Split)
 	s = s[15:]
 	for len(s) != 0 {
-		entryNum := utility.ParseEntryNum(&s[0])
-		localIP := utility.ParseIP(&s[1])
-		localPort := utility.ParsePort(&s[2])
-		remoteIP := utility.ParseIP(&s[3])
-		remotePort := utility.ParsePort(&s[4])
-		inode := utility.ParseInode(&s[13])
+		entryNum := utility.ParseEntryNum(s[0])
+		localIP := utility.ParseIP(s[1])
+		localPort := utility.ParsePort(s[2])
+		remoteIP := utility.ParseIP(s[3])
+		remotePort := utility.ParsePort(s[4])
+		inode := utility.ParseInode(s[13])
 		entry := UDPData{entryNum, localIP, localPort, remoteIP, remotePort, inode}
-		entries = append(entries, entry)
+		entries = append(entries, &entry)
 		s = s[17:]
 	}
 
-	return &entries, nil
+	return entries, nil
 }

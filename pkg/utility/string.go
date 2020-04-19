@@ -23,13 +23,13 @@ func RemoveZeroPadding(str *string) {
 }
 
 // ParseEntryNum はprocファイルシステムから取得したエントリー番号をuint8型に変換します．
-func ParseEntryNum(str *string) uint8 {
+func ParseEntryNum(str *string) uint16 {
 	RemoveZeroPadding(str)
-	s, err := strconv.ParseUint(*str, 16, 8)
+	s, err := strconv.ParseUint(*str, 10, 16)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return uint8(s)
+	return uint16(s)
 }
 
 // ParseIP はprocファイルシステムから取得したIPv4アドレスをnet.IP型に変換します．
@@ -63,3 +63,7 @@ func ParseInode(str *string) uint32 {
 	}
 	return uint32(s)
 }
+
+/*
+ParseXX系の関数をうまくまとめれれば嬉しい．けど，そこまで考えようという気が起きない…
+*/

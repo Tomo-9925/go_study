@@ -13,7 +13,7 @@ import (
 )
 
 // ProcessWithPath は通信を遮断する際に必要となるプロセス情報を格納した構造体です．
-// go-psのUnixProcess構造体（pid, ppid, state, pgrp, sid, binary）の情報に加えて，実行ファイルのパスの情報を追加しています．
+// go-psのProcess構造体（Pid, PPid, Executable）の情報に加えて，実行ファイルのパスの情報を追加しています．
 type ProcessWithPath struct {
 	ps.Process
 	path string
@@ -24,8 +24,9 @@ func (p ProcessWithPath) String() string {
 }
 
 // GetProcess は引数のinodeの数値をもとにプロセスを検索し，ProcessWithPath型のスライスでで情報を返却します．
-func GetProcess(inode uint32) ([]*ProcessWithPath, error) {
-	var processInfo []*ProcessWithPath
+func GetProcess(inode uint32) (*ProcessWithPath, error) {
+	var processInfo *ProcessWithPath
+	myPid := os.Getpid()
 
 	// すべてのプロセス情報を取得
 	process, err := ps.Processes()
@@ -36,14 +37,18 @@ func GetProcess(inode uint32) ([]*ProcessWithPath, error) {
 
 	// すべてのプロセス情報から指定されたinodeがあるか調査
 	for _, process := range process {
+		if process.Pid() == myPid {
+			continue // 自分のプロセス情報は調べない
+		}
 		fdPath := ProcRoot + "/" + strconv.Itoa(process.Pid()) + "/fd"
 		if ExistInode(fdPath, inode) {
 			path := GetProcessPath(process.Pid())
-			p := ProcessWithPath{process, path}
-			processInfo = append(processInfo, &p)
+			processInfo = &ProcessWithPath{process, path}
+			// p := ProcessWithPath{process, path}
+			// processInfo = append(processInfo, &p)
 		}
 	}
-	if len(processInfo) == 0 {
+	if processInfo.path == "" {
 		err = errors.New("couldn't find process")
 		fmt.Println(err)
 		return processInfo, err

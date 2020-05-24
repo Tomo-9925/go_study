@@ -14,7 +14,7 @@ var (
 	udpFile string = "/proc/net/udp"
 )
 
-
+//CheckProtocol returns TCP:1 UDP:2 Others:0
 func CheckProtocol(p gnq.NFPacket) uint16{
 	if tcpLayer := p.Packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 		return 1;
@@ -25,7 +25,7 @@ func CheckProtocol(p gnq.NFPacket) uint16{
 	}
 }	
 
-//CheckSrcPort returns source port  error:-1
+//CheckSrcPort returns source port 
 func CheckSrcPort(p gnq.NFPacket,protocolNum uint16) uint16 {
 	var srcPort uint16
 	if protocolNum == 1 {

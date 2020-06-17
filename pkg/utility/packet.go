@@ -6,7 +6,10 @@ import (
 	"os"
 	"bufio"
 	"strings"
+	"strconv"
 	"unsafe"
+	"github.com/mitchellh/go-ps"
+	"fmt"
 )
 
 var (
@@ -45,43 +48,59 @@ func CheckSrcPort(p gnq.NFPacket,protocolNum uint16) uint16 {
 //GetInode returns inode
 func GetInode(protocolNum uint16,srcPort uint16)(uint32,error){
 		var filename string
-
-		//protocolによって読み込みファイルを変える TCPなら /proc/net/tcp , UDPなら /proc/net/udp
+		myPid :=os.Getpid()
+		//protocolによって読み込みファイルを変える TCPなら /proc/{pid}/net/tcp , UDPなら /proc/{pid}/net/udp
 		if protocolNum == 1{
-			filename = tcpFile
+			filename = "tcp"
 		}else if protocolNum == 2{
-			filename = udpFile
+			filename = "udp"
 		}
-		file,err := os.Open(filename)
+	
+		//全てのプロセスを取得する
+		processes,err := ps.Processes()
+
 		if err != nil{
 			return 0,err
 		}
 
-		//終了時にファイルをクローズする
-		defer file.Close()
-		//ioutilだと一括読み込みになるのでbufioを使用
-		scanner := bufio.NewScanner(file)
-
-		//1行目は不要なためスキップ
-		scanner.Scan()
-
-		//１行ずつ読み込む
-		for scanner.Scan(){
-			line := scanner.Text()
-
-			// データの格納処理
-			str := strings.FieldsFunc(*(*string)(unsafe.Pointer(&line)), Split) // " "と":"，"\n"で文字列分割
-			localPort := ParsePort(str[2])
-
-			//port番号が取得したいものと一致すればinodeを取得し、返す
-			if localPort == srcPort{
-				inode := ParseInode(str[13])
-				return inode,nil
+		//全てのプロセスの/proc/pid/net/tcp(udp)を見ていく
+		for _,process := range processes{
+			if process.Pid() == myPid {
+				continue
 			}
-		}
+			filePath :="/proc"+"/"+strconv.Itoa(process.Pid())+"/net"+"/"+filename
+			file,err := os.Open(filePath)
+			if err != nil{
+				return 0,err
+			}
 
+			//終了時にファイルをクローズする
+			defer file.Close()
+			//ioutilだと一括読み込みになるのでbufioを使用
+			scanner := bufio.NewScanner(file)
+
+			//1行目は不要なためスキップ
+			scanner.Scan()
+
+			//１行ずつ読み込む
+			for scanner.Scan(){
+				line := scanner.Text()
+
+				// データの格納処理
+				str := strings.FieldsFunc(*(*string)(unsafe.Pointer(&line)), Split) // " "と":"，"\n"で文字列分割
+				localPort := ParsePort(str[2])
+
+				//port番号が取得したいものと一致すればinodeを取得し、返す
+				if localPort == srcPort{
+					fmt.Println(process.Pid())
+					inode := ParseInode(str[13])
+					return inode,nil
+				}
+		}
+	
 		if err := scanner.Err(); err!=nil{
 			return 0,err
 		}
+	}
 		return 0,nil
 }

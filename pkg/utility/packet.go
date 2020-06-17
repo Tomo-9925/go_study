@@ -102,5 +102,6 @@ func GetInode(protocolNum uint16,srcPort uint16)(uint32,error){
 			return 0,err
 		}
 	}
+
 		return 0,nil
 }

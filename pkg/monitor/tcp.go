@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	tcpFile string = ProcRoot + "/net/tcp"
+	tcpFile               string = ProcRoot + "/net/tcp"
+	updateTCPDataInterval uint   = 1000
 	// tcpFile string = "./tcp" // 検証用
 )
 

@@ -29,14 +29,14 @@ func GetProcess(inode uint32) (*ProcessWithPath, error) {
 	myPid := os.Getpid()
 
 	// すべてのプロセス情報を取得
-	process, err := ps.Processes()
+	processes, err := ps.Processes()
 	if err != nil {
 		fmt.Println(err)
 		return processInfo, err
 	}
 
 	// すべてのプロセス情報から指定されたinodeがあるか調査
-	for _, process := range process {
+	for _, process := range processes {
 		if process.Pid() == myPid {
 			continue // 自分のプロセス情報は調べない
 		}

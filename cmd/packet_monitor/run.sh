@@ -11,9 +11,10 @@ elif [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# 30秒間icmpパケットを観測
-iptables -A OUTPUT -p icmp,icmpv6 -j NFQUEUE --queue-num 2
+# # 10秒間全てのパケットを観測
+iptables -I  DOCKER-ISOLATION-STAGE-1 1 -p all  -j NFQUEUE --queue-num 2
 echo "キューを設定しました．"
-timeout 30 ./packet_monitor
-iptables -D OUTPUT -p icmp,icmpv6 -j NFQUEUE --queue-num 2
+timeout 10 ./packet_monitor
+iptables -D DOCKER-ISOLATION-STAGE-1  -p all  -j NFQUEUE --queue-num 2
 echo "キューの設定を元に戻しました．"
+

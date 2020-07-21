@@ -89,35 +89,46 @@ func GetInode(protocolNum uint16, srcPort uint16) (uint32, error) {
 		//dockerコンテナで使用しているPid以下のnet/tcp(udp)を見る
 		filePath := "/proc" + "/" + strconv.Itoa(config.State.Pid) + "/net" + "/" + filename
 
-		file, err := os.Open(filePath)
+		inode, err := func() (uint32, error) {
+			file, err := os.Open(filePath)
+			if err != nil {
+				return 0, err
+			}
+			//終了時にファイルをクローズする
+			defer file.Close()
+			//ioutilだと一括読み込みになるのでbufioを使用
+			scanner := bufio.NewScanner(file)
+
+			//1行目は不要なためスキップ
+			scanner.Scan()
+
+			//１行ずつ読み込む
+			for scanner.Scan() {
+				line := scanner.Text()
+
+				// データの格納処理
+				str := strings.FieldsFunc(*(*string)(unsafe.Pointer(&line)), Split) // " "と":"，"\n"で文字列分割
+				localPort := ParsePort(str[2])
+
+				//port番号が取得したいものと一致すればinodeを取得し、返す
+				if localPort == srcPort {
+					inode := ParseInode(str[13])
+					return inode, nil
+				}
+			}
+			if err := scanner.Err(); err != nil {
+				return 0, err
+			}
+			return 0, nil
+		}()
+
 		if err != nil {
 			return 0, err
 		}
-		//終了時にファイルをクローズする
-		defer file.Close()
-		//ioutilだと一括読み込みになるのでbufioを使用
-		scanner := bufio.NewScanner(file)
-
-		//1行目は不要なためスキップ
-		scanner.Scan()
-
-		//１行ずつ読み込む
-		for scanner.Scan() {
-			line := scanner.Text()
-
-			// データの格納処理
-			str := strings.FieldsFunc(*(*string)(unsafe.Pointer(&line)), Split) // " "と":"，"\n"で文字列分割
-			localPort := ParsePort(str[2])
-
-			//port番号が取得したいものと一致すればinodeを取得し、返す
-			if localPort == srcPort {
-				inode := ParseInode(str[13])
-				return inode, nil
-			}
+		if inode != 0 {
+			return inode, err
 		}
-		if err := scanner.Err(); err != nil {
-			return 0, err
-		}
+
 	}
 	return 0, nil
 }

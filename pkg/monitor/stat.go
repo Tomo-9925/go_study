@@ -42,16 +42,13 @@ func GetProcess(inode uint32) (*ProcessWithPath, error) {
 		}
 		fdPath := ProcRoot + "/" + strconv.Itoa(process.Pid()) + "/fd"
 		if ExistInode(fdPath, inode) {
-			path := GetProcessPath(process.Pid())
+			path := getProcessPath(process.Pid())
 			processInfo = &ProcessWithPath{process, path}
-			// p := ProcessWithPath{process, path}
-			// processInfo = append(processInfo, &p)
 		}
 	}
 	if processInfo.path == "" {
 		err = errors.New("couldn't find process")
 		fmt.Println(err)
-		return processInfo, err
 	}
 
 	return processInfo, err
@@ -82,8 +79,8 @@ func ExistInode(fdPath string, inode uint32) bool {
 	return false
 }
 
-// GetProcessPath は指定されたプロセスIDからプロセスのフルパスを返します．
-func GetProcessPath(pid int) string {
+// getProcessPath は指定されたプロセスIDからプロセスのフルパスを返します．
+func getProcessPath(pid int) string {
 	exe := ProcRoot + "/" + strconv.Itoa(pid) + "/exe"
 	str, err := os.Readlink(exe)
 	if err != nil {

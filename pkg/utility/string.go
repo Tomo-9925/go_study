@@ -7,9 +7,9 @@ import (
 	"strconv"
 )
 
-// Split は文字が" "または":"，"\n"であるかを判定します．
+// Split は文字が" "または":"であるかを判定します．
 func Split(r rune) bool {
-	return r == ' ' || r == ':' || r == '\n'
+	return r == ' ' || r == ':'
 }
 
 // RemoveZeroPadding は文字列の頭の"0"を取り除きます．

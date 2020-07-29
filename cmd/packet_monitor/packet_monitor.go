@@ -6,6 +6,8 @@ import (
 	"os/signal"
 
 	"github.com/AkihiroSuda/go-netfilter-queue"
+	"github.com/google/gopacket/layers"
+	"github.com/tomo-9925/go_study/pkg/monitor"
 )
 
 // 定数
@@ -47,12 +49,32 @@ func main() {
 	packets := nfq.GetPackets()
 	printD("packet handling")
 
+	count := 0
+
 	for {
 		select {
 		// パケットが届いたとき
 		case p := <-packets:
-			fmt.Println(p.Packet)
+			count++
+			fmt.Printf("%d番目のパケット\n", count)
+			fmt.Printf("パケットの概要:\n%v\n", p.Packet)
+			fmt.Println("パケットの解析結果:")
+			if p.Packet.NetworkLayer().LayerType() == layers.LayerTypeIPv4 {
+				s, err := monitor.GetSocket(p)
+				if err != nil && Debug {
+					fmt.Println(err)
+				}
+				fmt.Printf("Socket: %+v\n", s)
+				process, err := monitor.GetProcess(s.Inode)
+				if err != nil && Debug {
+					fmt.Println(err)
+				}
+				fmt.Printf("Process: %+v\n", process)
+			} else {
+				printD("IPv4以外のネットワークレイヤーのプロトコルを使用した通信を観測しました．")
+			}
 			p.SetVerdict(netfilter.NF_ACCEPT) // パケットを透過
+			fmt.Printf("\n\n")
 		// SIGINTを検知したとき
 		case sig := <-c:
 			fmt.Println(sig)

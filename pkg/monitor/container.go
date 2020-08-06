@@ -12,10 +12,11 @@ var containerInformations []*Container
 
 // Container はDocker Engine APIから取得できるデータの構造体です．
 type Container struct {
-	ID   string
-	IP   net.IP
-	Name string
-	Pid  int
+	ID        string
+	IP        net.IP
+	Name      string
+	NetworkID string
+	Pid       int
 }
 
 // GetContainerInformations はDocker Engine APIを使用して必要なコンテナの情報を取得します．

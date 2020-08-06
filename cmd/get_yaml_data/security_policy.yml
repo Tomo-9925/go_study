@@ -1,0 +1,13 @@
+firewalls:
+  - type: 'allowlist'
+    container:
+      id: 'XXXXXX'
+      name: 'hoge'
+    filters:
+      - processes:
+          - path: '/usr/local/bin/nc'
+            executable: 'nc'
+        sockets:
+          - protocol: 'tcp'
+            local_port: 8888
+
